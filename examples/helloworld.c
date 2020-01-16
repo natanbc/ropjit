@@ -18,9 +18,10 @@ int main(void) {
     data[6] = (uint64_t)ropjit_gadget_load_immediate(ROPJIT_REG_RDI);
     data[7] = 1;
     data[8] = (uint64_t)ropjit_syscall;
+
     data[9] = (uint64_t)ropjit_gadget_load_immediate(ROPJIT_REG_RAX);
     data[10] = 0; //dummy, will be replaced in ropjit_run
-    data[11] = (uint64_t)ropjit_gadget_leavejit(ROPJIT_REG_RAX);
+    data[11] = (uint64_t)ropjit_gadget_move(ROPJIT_REG_RSP, ROPJIT_REG_RAX);
 
     printf("before ropjit_run\n");
     ropjit_run(data, &data[10]);

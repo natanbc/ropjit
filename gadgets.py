@@ -83,15 +83,6 @@ class Syscall:
     ret
     """
 
-class LeaveJit:
-    def base_name():
-        return "leavejit"
-    def codegen(a):
-        return f"""
-    mov rsp, {a}
-    ret
-    """
-
 class Call:
     def base_name():
         return "call"
@@ -137,6 +128,24 @@ class Mul:
 #    ret
 #    """
 
+class Jump:
+    def base_name():
+        return "jump"
+    def codegen(a):
+        return f"""
+    jmp {a}
+    """
+
+class CopyMemory:
+    def base_name():
+        return "copy_memory"
+    def codegen(_a):
+        return f"""
+    cld
+    rep movsb
+    ret
+    """
+
 class Registers:
     def __init__(self, regs, count = 1):
         self.__regs = regs
@@ -169,12 +178,13 @@ gen = [
         (Debugger,      Registers([""], count = 0)),
         (Nop,           Registers([""], count = 0)),
         (Syscall,       Registers([""], count = 0)),
-        (LeaveJit,      Registers(general_purpose)),
         (Call,          Registers(general_purpose)),
         (Add,           Registers(general_purpose, count = 2)),
         (Sub,           Registers(general_purpose, count = 2)),
         (Mul,           Registers(general_purpose, count = 2)),
 #        (Div,           Registers(general_purpose, count = 2)),
+        (Jump,          Registers(general_purpose)),
+        (CopyMemory,    Registers([""], count = 0)),
 ]
 
 def gen_assembly(generator, regs):
