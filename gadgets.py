@@ -197,13 +197,22 @@ def gen_definition(generator, regs):
     name = function_name(generator.base_name(), regs);
     return f"void {name}();"
 
-def gen_switch(generator, regs):
-    if regs.no_args():
+def gen_switch_definition(generator, regs, semicolon = True):
+    if regs.no_args(): 
         return f"/* {generator.base_name()} takes no args, no switch needed */"
-    res = []
-    res.append(f"ropjit_gadget_t ropjit_gadget_{generator.base_name()}(")
-    res.append("    " + ", ".join([f"ropjit_reg_t r{i}" for i in range(regs.arg_count())]))
-    res.append(") {")
+    args = ", ".join([f"ropjit_reg_t r{i}" for i in range(regs.arg_count())])
+    s = ";" if semicolon else ""
+    return f"""
+ropjit_gadget_t ropjit_gadget_{generator.base_name()}(
+    {args}
+){s}"""
+
+def gen_switch(generator, regs):
+    definition = gen_switch_definition(generator, regs, semicolon = False);
+    if regs.no_args():
+        return definition
+    res = [definition]
+    res.append("{")
     
     def gen_level(prefix, indent_level = 0):
         def indented(s):
@@ -246,6 +255,10 @@ def generate(header, how, write):
             
             write(how(f, regs))
 
+def generate_switch(f, write):
+    for g, reg_list in gen:
+        write(f(g, reg_list))
+
 with open("generated/gadgets.s", "w") as f:
     generate(".intel_syntax noprefix\n", gen_assembly, lambda x: f.write(x + "\n"))
 
@@ -255,5 +268,11 @@ with open("generated/gadgets.h", "w") as f:
 """
     generate(includes, gen_definition, lambda x: f.write(x + "\n"))
     f.write("\n\n\n")
-    for g, reg_list in gen:
-        f.write(gen_switch(g, reg_list) + "\n")
+    generate_switch(gen_switch_definition, lambda x: f.write(x + "\n"))
+
+with open("generated/gadgets.c", "w") as f:
+    f.write("""
+#include "gadgets.h"
+
+""")
+    generate_switch(gen_switch, lambda x: f.write(x + "\n"))
