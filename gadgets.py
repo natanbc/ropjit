@@ -193,11 +193,11 @@ def gen_assembly(generator, regs):
 {name}: .globl {name}
 {generator.codegen(*regs).lstrip()}"""
 
-def gen_definition(generator, regs):
+def gen_declaration(generator, regs):
     name = function_name(generator.base_name(), regs);
     return f"void {name}();"
 
-def gen_switch_definition(generator, regs, semicolon = True):
+def gen_switch_declaration(generator, regs, semicolon = True):
     if regs.no_args(): 
         return f"/* {generator.base_name()} takes no args, no switch needed */"
     args = ", ".join([f"ropjit_reg_t r{i}" for i in range(regs.arg_count())])
@@ -208,7 +208,7 @@ ropjit_gadget_t ropjit_gadget_{generator.base_name()}(
 ){s}"""
 
 def gen_switch(generator, regs):
-    definition = gen_switch_definition(generator, regs, semicolon = False);
+    definition = gen_switch_declaration(generator, regs, semicolon = False);
     if regs.no_args():
         return definition
     res = [definition]
@@ -266,9 +266,9 @@ with open("generated/gadgets.h", "w") as f:
     includes = """
 #include "ropjit_defs.h"
 """
-    generate(includes, gen_definition, lambda x: f.write(x + "\n"))
+    generate(includes, gen_declaration, lambda x: f.write(x + "\n"))
     f.write("\n\n\n")
-    generate_switch(gen_switch_definition, lambda x: f.write(x + "\n"))
+    generate_switch(gen_switch_declaration, lambda x: f.write(x + "\n"))
 
 with open("generated/gadgets.c", "w") as f:
     f.write("""
