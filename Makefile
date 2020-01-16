@@ -1,14 +1,24 @@
-CFLAGS= -g -I .
+CFLAGS=-g
 OUTPUT=ropjit
 
+ifeq (${EXAMPLE},)
+EXAMPLE=helloworld
+endif
+
 all: codegen
-	${CC} ${CFLAGS} gadgets.s ropjit.s examples/helloworld.c -o ${OUTPUT}
+	${CC} ${CFLAGS}             \
+		-I generated -I include \
+		generated/gadgets.s     \
+		src/ropjit.s            \
+		examples/${EXAMPLE}.c   \
+		-o ${OUTPUT}
 
 codegen:
+	mkdir -p generated
 	./gadgets.py
 
 run: all
 	./${OUTPUT}
 
 clean:
-	rm gadgets.s gadgets.h ${OUTPUT}
+	rm -rf generated ${OUTPUT}

@@ -246,10 +246,10 @@ def generate(header, how, write):
             
             write(how(f, regs))
 
-with open("gadgets.s", "w") as f:
+with open("generated/gadgets.s", "w") as f:
     generate(".intel_syntax noprefix\n", gen_assembly, lambda x: f.write(x + "\n"))
 
-with open("gadgets.h", "w") as f:
+with open("generated/gadgets.h", "w") as f:
     includes = """
 #include "ropjit_defs.h"
 """
